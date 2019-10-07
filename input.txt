@@ -1,0 +1,135 @@
+package main
+
+import "fmt"
+
+type Node struct {
+	Value int
+}
+
+// 用于构建结构体切片为最小堆，需要调用down函数
+func Init(nodes []Node) {
+
+	for i:=(len(nodes)-1)/2; i >=0 ; i-- {
+		down(nodes,i,len(nodes))
+	}
+}
+
+// 需要down（下沉）的元素在切片中的索引为i，n为heap的长度，将该元素下沉到该元素对应的子树合适的位置，从而满足该子树为最小堆的要求
+func down(nodes []Node, i, n int) {
+
+	parent := i
+	child := 2*parent + 1
+	for child < n {
+
+		if(child + 1 < n && nodes[child+1].Value < nodes[child].Value){
+			child++
+		}
+		if nodes[parent].Value <= nodes[child].Value{
+			break
+		}
+
+		temp := nodes[parent].Value
+		nodes[parent].Value = nodes[child].Value
+		nodes[child].Value = temp
+		parent = child
+		child = parent*2 + 1
+
+	}
+}
+
+// 用于保证插入新元素(j为元素的索引,切片末尾插入，堆底插入)的结构体切片之后仍然是一个最小堆
+func up(nodes []Node, j int) {
+
+	child := j
+	parent := (child - 1) / 2
+
+	for j>0 {
+
+		if(nodes[child].Value >= nodes[parent].Value){
+			break
+		}
+
+		temp := nodes[parent].Value
+		nodes[parent].Value = nodes[child].Value
+		nodes[child].Value = temp
+		child = parent
+		parent = (child - 1) / 2
+	}
+}
+
+// 弹出最小元素，并保证弹出后的结构体切片仍然是一个最小堆，第一个返回值是弹出的节点的信息，第二个参数是Pop操作后得到的新的结构体切片
+func Pop(nodes []Node) (Node, []Node) {
+
+	min := nodes[0]
+	nodes[0].Value = nodes[len(nodes)-1].Value
+	nodes = append(nodes[:len(nodes)-1], nodes[len(nodes):]...)
+	down(nodes,0,len(nodes)-1)
+	return min, nodes
+}
+
+// 保证插入新元素时，结构体切片仍然是一个最小堆，需要调用up函数
+func Push(node Node, nodes []Node) []Node {
+
+	nodes = append(nodes,node)
+	up(nodes,len(nodes)-1)
+	return nodes
+}
+
+// 移除切片中指定索引的元素，保证移除后结构体切片仍然是一个最小堆
+func Remove(nodes []Node, node Node) []Node {
+
+	for i := 0; i < len(nodes); i++ {
+
+		if nodes[i] == node{
+			nodes[i].Value = nodes[len(nodes)-1].Value
+			nodes = append(nodes[:len(nodes)-1], nodes[len(nodes):]...)
+			down(nodes,0,len(nodes)-1)
+		}
+	}
+	return nodes
+}
+
+func Display(nodes []Node) {
+
+	for i := 0; i < len(nodes); i++ {
+		fmt.Printf("%d ", nodes[i].Value)
+	}
+	fmt.Printf("\n")
+}
+
+func main() {
+
+	nodes := []Node{
+		Node{8},
+		Node{10},
+		Node{16},
+		Node{1},
+		Node{2},
+		Node{5},
+		Node{3},
+		Node{9},
+		Node{21},
+	}
+
+	fmt.Printf("original array\n")
+	Display(nodes)
+
+	fmt.Printf("Init()\n")
+	Init(nodes)
+	Display(nodes)
+
+	fmt.Printf("Push() with 0\n")
+	node_push := Node{0}
+	nodes=Push(node_push,nodes)
+	Display(nodes)
+
+	fmt.Printf("Pop()\n")
+	min, nodes := Pop(nodes)
+	fmt.Printf("min :%d\n",min.Value)
+	Display(nodes)
+
+	fmt.Printf("Remove() with 1\n")
+	node_remove := Node{1}
+	nodes = Remove(nodes,node_remove)
+	Display(nodes)
+}
